@@ -115,10 +115,8 @@ namespace swiftnav_piksi
 
 		class PIKSI *driver = (class PIKSI*) context;
 
-		std::cout << "heartbeat" << std::endl;
-
 		if (hb.flags & 1)
-			std::cout << "an error has occured" << std::endl;
+			std::cout << "an error has occured in a heartbeat message" << std::endl;
 			
 		return;
 	}
@@ -160,7 +158,6 @@ namespace swiftnav_piksi
 		class PIKSI *driver = (class PIKSI*) context;
 
 		sbp_pos_llh_t llh = *(sbp_pos_llh_t*) msg;
-		std::cout << "In pos_llh cb, num sats: " << llh.n_sats << std::endl;
 
 		sensor_msgs::NavSatFixPtr llh_msg( new sensor_msgs::NavSatFix );
 
