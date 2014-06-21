@@ -41,6 +41,9 @@
 
 #include "swiftnav_piksi/piksi.h"
 
+#include <libswiftnav/sbp.h>
+#include <libswiftnav/sbp_messages.h>
+
 #include <ros/ros.h>
 #include <ros/rate.h>
 #include <tf/tf.h>
@@ -52,6 +55,10 @@
 
 namespace swiftnav_piksi
 {
+	void heartbeatCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+	void timeCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+	void pos_llhCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+
 	class PIKSI
 	{
 	public:
@@ -83,8 +90,28 @@ namespace swiftnav_piksi
 		ros::NodeHandle nh_priv;
 		std::string port;
 		std::string frame_id;
-		int piksid;
+		int8_t piksid;
 		boost::mutex cmd_lock;
+
+		sbp_state_t state;
+		sbp_msg_callbacks_node_t heartbeat_callback_node;
+		sbp_msg_callbacks_node_t time_callback_node;
+//		sbp_msg_callbacks_node_t dop_callback_node;
+//		sbp_msg_callbacks_node_t pos_ecef_callback_node;
+		sbp_msg_callbacks_node_t pos_llh_callback_node;
+//		sbp_msg_callbacks_node_t baseline_ecef_callback_node;
+//		sbp_msg_callbacks_node_t baseline_ned_callback_node;
+//		sbp_msg_callbacks_node_t vel_ecef_callback_node;
+//		sbp_msg_callbacks_node_t vel_ned_callback_node;
+		sbp_gps_time_t time;
+		sbp_dops_t dops;
+		sbp_pos_ecef_t pos_ecef;
+		sbp_pos_llh_t pos_llh;
+		sbp_baseline_ecef_t baseline_ecef;
+		sbp_baseline_ned_t baseline_ned;
+		sbp_vel_ecef_t vel_ecef;
+		sbp_vel_ned_t vel_ned;
+
 
 		/*!
 		 * \brief Diagnostic updater
@@ -103,8 +130,7 @@ namespace swiftnav_piksi
 		 */
 		diagnostic_updater::FrequencyStatus diag_pub_freq;
 
-		ros::Publisher fix_pub;
-		ros::Publisher status_pub;
+		ros::Publisher llh_pub;
 		ros::Publisher time_pub;
 
 		unsigned int io_failure_count;
@@ -112,6 +138,10 @@ namespace swiftnav_piksi
 
 		ros::Rate spin_rate;
 		boost::thread spin_thread;
+
+		friend void heartbeatCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+		friend void timeCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+		friend void pos_llhCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 	};
 }
 

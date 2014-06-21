@@ -57,21 +57,13 @@ enum piksi_error
 };
 
 int piksi_open( const char *port );
-void piksi_close( const int piksid );
+void piksi_close( const int8_t piksid );
 
-s8 piksi_reset( const int piksid );
-s8 piksi_cw_start( const int piksid );
+u8 piksi_spin( const int8_t piksid );
 
-u8 piksi_spin( const int piksid );
+u32 send_cmd( u8 *data, u32 num_bytes, void* context );
+u32 read_data( u8 *data, u32 num_bytes, void* context );
 
-sbp_gps_time_t piksi_get_time( const int piksid );
-sbp_dops_t piksi_get_dops( const int piksid );
-sbp_pos_ecef_t piksi_get_pos_ecef( const int piksid );
-sbp_pos_llh_t piksi_get_pos_llh( const int piksid );
-sbp_baseline_ecef_t piksi_get_baseline_ecef( const int piksid );
-sbp_baseline_ned_t piksi_get_baseline_ned( const int piksid );
-sbp_vel_ecef_t piksi_get_vel_ecef( const int piksid );
-sbp_vel_ned_t piksi_get_vel_ned( const int piksid );
 
 #ifdef __cplusplus
 }

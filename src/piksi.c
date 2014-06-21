@@ -37,10 +37,6 @@
 ******************************************************************************/
 
 #include "swiftnav_piksi/piksi.h"
-#include "swiftnav_piksi/piksi_priv.h"
-
-#include <libswiftnav/sbp.h>
-#include <libswiftnav/sbp_messages.h>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -61,23 +57,6 @@ struct piksi_priv
 	int fd;
 	int baud;
 	char *port;
-	sbp_state_t state;
-	sbp_msg_callbacks_node_t time_callback_node;
-	sbp_msg_callbacks_node_t dop_callback_node;
-	sbp_msg_callbacks_node_t pos_ecef_callback_node;
-	sbp_msg_callbacks_node_t pos_llh_callback_node;
-	sbp_msg_callbacks_node_t baseline_ecef_callback_node;
-	sbp_msg_callbacks_node_t baseline_ned_callback_node;
-	sbp_msg_callbacks_node_t vel_ecef_callback_node;
-	sbp_msg_callbacks_node_t vel_ned_callback_node;
-	sbp_gps_time_t time;
-	sbp_dops_t dops;
-	sbp_pos_ecef_t pos_ecef;
-	sbp_pos_llh_t pos_llh;
-	sbp_baseline_ecef_t baseline_ecef;
-	sbp_baseline_ned_t baseline_ned;
-	sbp_vel_ecef_t vel_ecef;
-	sbp_vel_ned_t vel_ned;
 };
 
 /*!
@@ -153,18 +132,18 @@ static int baud2term( int baud )
 
 u32 send_cmd( u8 *data, u32 num_bytes, void* context )
 {
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	return write( piksid->fd, data, num_bytes );
+	int8_t piksid = *( int8_t* ) context;
+	return write( piksi_list[piksid]->fd, data, num_bytes );
 }
 
 u32 read_data( u8 *data, u32 num_bytes, void* context )
 {
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
+	int8_t piksid = *( int8_t* ) context;
 	u32 bytes_recv = 0;
 	u32 bytes_recvd = 0;
 	while( num_bytes )
 	{
-		bytes_recv = read( piksid->fd, data, num_bytes );
+		bytes_recv = read( piksi_list[piksid]->fd, data, num_bytes );
 		if( bytes_recv <= 0 )
 			return 0;
 		num_bytes -= bytes_recv;
@@ -200,7 +179,6 @@ int piksi_open( const char *port )
 		return PIKSI_ERROR_IO;
 	}
 
-
 	/* Step 2: Allocate a private struct */
 	int mydev = next_available_handle( );
 	if( mydev < 0 )
@@ -220,20 +198,6 @@ int piksi_open( const char *port )
 	piksi_list[mydev]->fd = fd;
 	piksi_list[mydev]->baud = baud2term( 1000000 );
 
-	/* Step 3: Setup SBP state and regiser callbacks */
-
-	sbp_state_init(&piksi_list[mydev]->state);
-	sbp_state_set_io_context(&piksi_list[mydev]->state, piksi_list[mydev]);
-
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_GPS_TIME, &time_callback, piksi_list[mydev], &piksi_list[mydev]->time_callback_node);
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_DOPS, &dop_callback, piksi_list[mydev], &piksi_list[mydev]->dop_callback_node);
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_POS_ECEF, &pos_ecef_callback, piksi_list[mydev], &piksi_list[mydev]->pos_ecef_callback_node);
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_POS_LLH, &pos_llh_callback, piksi_list[mydev], &piksi_list[mydev]->pos_llh_callback_node);
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_BASELINE_ECEF, &baseline_ecef_callback, piksi_list[mydev], &piksi_list[mydev]->baseline_ecef_callback_node);
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_BASELINE_NED, &baseline_ned_callback, piksi_list[mydev], &piksi_list[mydev]->baseline_ned_callback_node);
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_VEL_ECEF, &vel_ecef_callback, piksi_list[mydev], &piksi_list[mydev]->vel_ecef_callback_node);
-	sbp_register_callback(&piksi_list[mydev]->state, SBP_VEL_NED, &vel_ned_callback, piksi_list[mydev], &piksi_list[mydev]->vel_ned_callback_node);
-
 	return mydev;
 
 	/* Free gotos */
@@ -247,7 +211,7 @@ int piksi_open( const char *port )
 		return PIKSI_ERROR_NO_MEM;
 }
 
-void piksi_close( const int piksid )
+void piksi_close( const int8_t piksid )
 {
 	if( piksid < 0 || piksid > MAX_HANDLES || !piksi_list[piksid] )
 		return;
@@ -261,149 +225,8 @@ void piksi_close( const int piksid )
 	return;
 }
 
-void time_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In time cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->time = *(sbp_gps_time_t*) msg;
-	return;
-}
-
-void dop_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In dop cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->dops = *(sbp_dops_t*) msg;
-	return;
-}
-
-void pos_ecef_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In pos_ecef cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->pos_ecef = *(sbp_pos_ecef_t*) msg;
-	return;
-}
-
-void pos_llh_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In pos_llh cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->pos_llh = *(sbp_pos_llh_t*) msg;
-	printf("lat_cb: %d\n", piksid->pos_llh.lat);
-	printf("lon_cb: %d\n", piksid->pos_llh.lon);
-	return;
-}
-
-void baseline_ecef_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In baseline_ecef cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->baseline_ecef = *(sbp_baseline_ecef_t*) msg;
-	return;
-}
-
-void baseline_ned_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In baseline_ned cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->baseline_ned = *(sbp_baseline_ned_t*) msg;
-	return;
-}
-
-void vel_ecef_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In vel_ecef cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->vel_ecef = *(sbp_vel_ecef_t*) msg;
-	return;
-}
-
-void vel_ned_callback(u16 sender_id, u8 len, u8 msg[], void *context)
-{
-	printf("In vel_ned cb\n");
-	struct piksi_priv* piksid = ( struct piksi_priv* ) context;
-	piksid->vel_ned = *(sbp_vel_ned_t*) msg;
-}
-
-u8 piksi_spin( const int piksid )
-{
-	return sbp_process( &piksi_list[piksid]->state, &read_data );
-}
-
-s8 piksi_reset( const int piksid )
-{
-	return sbp_send_message( &piksi_list[piksid]->state, 0xB2, 0, 0, 0, &send_cmd );
-}
-
-s8 piksi_cw_start( const int piksid )
-{
-	return sbp_send_message( &piksi_list[piksid]->state, 0xC1, 0, 0, 0, &send_cmd );
-}
-
-sbp_gps_time_t piksi_get_time( const int piksid )
-{
-	printf("Getting time: %d\n", piksi_list[piksid]->time.tow);
-	return piksi_list[piksid]->time;
-}
-
-sbp_dops_t piksi_get_dops( const int piksid )
-{
-	return piksi_list[piksid]->dops;
-}
-
-sbp_pos_ecef_t piksi_get_pos_ecef( const int piksid )
-{
-	return piksi_list[piksid]->pos_ecef;
-}
-
-sbp_pos_llh_t piksi_get_pos_llh( const int piksid )
-{
-	printf("Getting lat: %d\n", piksi_list[piksid]->pos_llh.lat);
-	printf("Getting lon: %d\n", piksi_list[piksid]->pos_llh.lon);
-	return piksi_list[piksid]->pos_llh;
-}
-
-sbp_baseline_ecef_t piksi_get_baseline_ecef( const int piksid )
-{
-	return piksi_list[piksid]->baseline_ecef;
-}
-
-sbp_baseline_ned_t piksi_get_baseline_ned( const int piksid )
-{
-	return piksi_list[piksid]->baseline_ned;
-}
-
-sbp_vel_ecef_t piksi_get_vel_ecef( const int piksid )
-{
-	return piksi_list[piksid]->vel_ecef;
-}
-
-sbp_vel_ned_t piksi_get_vel_ned( const int piksid )
-{
-	return piksi_list[piksid]->vel_ned;
-}
-
 int main()
 {
-	printf("start\n");
-	int hand;
-	s8 sbpp;
-
-	if( ( hand = piksi_open( "/dev/ttyUSB0" ) ) < 0 )
-	{
-		printf("piksi connection error: %d\n", hand);
-		return -1;
-	}
-
-	printf("Piksi open handle#:%d\n", hand);
-
-	while(true)
-	{
-		sbpp = piksi_spin(hand);
-
-		piksi_get_pos_llh(hand);
-	}
-
 	return 0;
 }
+
