@@ -58,6 +58,7 @@ namespace swiftnav_piksi
 	void heartbeatCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 	void timeCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 	void pos_llhCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+	void baseline_nedCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 
 	class PIKSI
 	{
@@ -100,7 +101,7 @@ namespace swiftnav_piksi
 //		sbp_msg_callbacks_node_t pos_ecef_callback_node;
 		sbp_msg_callbacks_node_t pos_llh_callback_node;
 //		sbp_msg_callbacks_node_t baseline_ecef_callback_node;
-//		sbp_msg_callbacks_node_t baseline_ned_callback_node;
+		sbp_msg_callbacks_node_t baseline_ned_callback_node;
 //		sbp_msg_callbacks_node_t vel_ecef_callback_node;
 //		sbp_msg_callbacks_node_t vel_ned_callback_node;
 		sbp_gps_time_t time;
@@ -131,6 +132,7 @@ namespace swiftnav_piksi
 		diagnostic_updater::FrequencyStatus diag_pub_freq;
 
 		ros::Publisher llh_pub;
+		ros::Publisher rtk_pub;
 		ros::Publisher time_pub;
 
 		unsigned int io_failure_count;
@@ -142,6 +144,7 @@ namespace swiftnav_piksi
 		friend void heartbeatCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 		friend void timeCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 		friend void pos_llhCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+		friend void baseline_nedCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 	};
 }
 
