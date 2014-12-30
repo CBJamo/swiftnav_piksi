@@ -126,10 +126,15 @@ namespace swiftnav_piksi
 		 * \brief Normal acceptable update rate maximum
 		 */
 		double max_update_rate;
+
+        double min_rtk_rate;
+        double max_rtk_rate;
+
 		/*!
-		 * \brief Diagnostic rate for IMU publication
+		 * \brief Diagnostic rate for gps/rtk publication
 		 */
-		diagnostic_updater::FrequencyStatus diag_pub_freq;
+		diagnostic_updater::FrequencyStatus piksi_pub_freq;
+		diagnostic_updater::FrequencyStatus rtk_pub_freq;
 
 		ros::Publisher llh_pub;
 		ros::Publisher rtk_pub;
