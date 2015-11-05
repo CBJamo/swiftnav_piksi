@@ -82,7 +82,7 @@ target_link_libraries(piksitest
   ${SWIFTNAV}
 )
 target_link_libraries(piksi_driver
-  piksi
+  piksi sbp
 )
 target_link_libraries(piksi_node
   piksi_driver

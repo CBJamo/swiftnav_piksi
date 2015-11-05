@@ -41,8 +41,9 @@
 
 #include "swiftnav_piksi/piksi.h"
 
-#include <libswiftnav/sbp.h>
-#include <libswiftnav/sbp_messages.h>
+#include <libsbp/sbp.h>
+#include <libsbp/system.h>
+#include <libsbp/navigation.h>
 
 #include <ros/ros.h>
 #include <ros/rate.h>
@@ -60,6 +61,7 @@ namespace swiftnav_piksi
 	void pos_llhCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 	void dops_Callback(u16 sender_id, u8 len, u8 msg[], void *context);
 	void baseline_nedCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+	void vel_nedCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 
 	class PIKSI
 	{
@@ -104,7 +106,7 @@ namespace swiftnav_piksi
 //		sbp_msg_callbacks_node_t baseline_ecef_callback_node;
 		sbp_msg_callbacks_node_t baseline_ned_callback_node;
 //		sbp_msg_callbacks_node_t vel_ecef_callback_node;
-//		sbp_msg_callbacks_node_t vel_ned_callback_node;
+		sbp_msg_callbacks_node_t vel_ned_callback_node;
 
 		/*
 		 * Diagnostic updater
@@ -155,6 +157,12 @@ namespace swiftnav_piksi
         double rtk_height;
         double rtk_h_accuracy;
 
+        double rtk_vel_north;
+        double rtk_vel_east;
+        double rtk_vel;
+        double rtk_vel_yaw;
+        double rtk_hvel_accuracy;
+
 		ros::Rate spin_rate;
 		boost::thread spin_thread;
 
@@ -163,6 +171,7 @@ namespace swiftnav_piksi
 		friend void pos_llhCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 		friend void dops_Callback(u16 sender_id, u8 len, u8 msg[], void *context);
 		friend void baseline_nedCallback(u16 sender_id, u8 len, u8 msg[], void *context);
+		friend void vel_nedCallback(u16 sender_id, u8 len, u8 msg[], void *context);
 	};
 }
 
