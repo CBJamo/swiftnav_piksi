@@ -1,10 +1,16 @@
 <?xml version="1.0"?>
 <package>
   <name>swiftnav_piksi</name>
-  <version>0.0.1</version>
-  <description>Swift Navigation Piksi Driver</description>
+  <version>0.0.2</version>
+  <description>
+    swiftnav_piksi is a package that provides a ROS driver for the Swift Navigation Piksi
+    module. The Piksi module provides an RTK differential GPS solution that under best
+    conditions provides the location of a rover relative to a base station with an
+    accuracy of around 2cm. The swiftnav_piksi driver publishes this location on
+    standard ROS topics.
+  </description>
 
-  <maintainer email="cbjamo@gmail.com">Caleb Jamison</maintainer>
+  <maintainer email="paul.bouchier@gmail.com">Paul Bouchier</maintainer>
 
   <license>BSD</license>
 
@@ -22,9 +28,11 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>libswiftnav</build_depend>
+  <build_depend>libsbp</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>diagnostic_updater</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>libswiftnav</run_depend>
+  <run_depend>libsbp</run_depend>
 </package>

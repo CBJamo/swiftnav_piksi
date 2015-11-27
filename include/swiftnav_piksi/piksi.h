@@ -43,8 +43,7 @@
 extern "C" {
 #endif
 
-#include <libswiftnav/sbp.h>
-#include <libswiftnav/sbp_messages.h>
+#include <libsbp/sbp.h>
 
 enum piksi_error
 {
